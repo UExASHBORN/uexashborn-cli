@@ -65,16 +65,17 @@ body {
   background: rgba(88, 166, 255, 0.1);
 }
 
-#intro-svg path {
+.ashborn-svg path {
 
-  stroke-dasharray: 4000;
-  stroke-dashoffset: 4000;
+    stroke-dasharray: 4000;
+    stroke-dashoffset: 4000;
 
-  animation: ashbornDraw 6s ease forwards;
+    animation: draw 5s linear forwards;
 }
 
-@keyframes ashbornDraw {
-  to {
-    stroke-dashoffset: 0;
-  }
+@keyframes draw {
+
+    to {
+        stroke-dashoffset: 0;
+    }
 }
