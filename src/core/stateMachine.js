@@ -1,8 +1,9 @@
 import { STATES } from "./constants";
 
 export const appState = {
-  current: STATES.BOOT,
-  payload: null
+  mode: "CLI", // default (temporary)
+  current: STATES.INTRO_SEQUENCE,
+  payload: null,
 };
 
 export function setState(newState, payload = null) {

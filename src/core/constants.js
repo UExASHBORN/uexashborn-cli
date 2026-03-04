@@ -1,4 +1,5 @@
 export const STATES = {
+  INTRO_SEQUENCE: "INTRO_SEQUENCE",
   BOOT: "BOOT",
   INTRO: "INTRO",
   MAIN: "MAIN",
