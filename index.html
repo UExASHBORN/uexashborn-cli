@@ -1,13 +1,31 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>uexashborn</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UExASHBORN</title>
+</head>
+
+<body>
+
+<div id="app" class="terminal">
+
+  <div id="intro-svg"></div>
+
+  <div id="mode-toggle" class="mode-toggle">Switch to GUI</div>
+
+  <div id="skip-intro" class="skip-intro">Skip Intro</div>
+
+  <div id="cli-output" class="terminal-output"></div>
+
+  <div class="terminal-input-row">
+    <span class="prompt">&gt;&gt;&gt;</span>
+    <input id="cli-input" class="terminal-input" autocomplete="off"/>
+  </div>
+
+</div>
+
+<script type="module" src="/src/main.js"></script>
+
+</body>
 </html>

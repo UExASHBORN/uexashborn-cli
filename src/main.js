@@ -1,15 +1,21 @@
-import './styles/main.css';
-import ashbornSVG from "./assets/closeup-rifle-less-px.svg?raw";
-const container = document.getElementById("intro-svg");
-container.innerHTML = ashbornSVG;
+import "./styles/main.css";
+
+import { renderIntro } from "./renderers/introRenderer";
+
+const introContainer = document.getElementById("intro-svg");
+
+renderIntro(introContainer);
+
+
 import { appState } from "./core/stateMachine";
 import { dispatch } from "./core/dispatch";
 import { renderCLI, setupCLI } from "./renderers/cliRenderer";
 import { renderGUI } from "./renderers/guiRenderer";
-
 import { execute } from "./core/executor";
 
+
 function render() {
+
   const toggle = document.getElementById("mode-toggle");
 
   if (toggle) {
@@ -24,20 +30,29 @@ function render() {
   } else {
     renderGUI(appState);
   }
+
 }
 
-// Setup CLI input handling ONCE
+
 setupCLI((input) => {
+
   execute(input, dispatch);
+
   render();
+
 });
+
 
 const toggle = document.getElementById("mode-toggle");
 
 if (toggle) {
+
   toggle.addEventListener("click", () => {
+
     const nextMode =
-      appState.mode === "CLI" ? "GUI" : "CLI";
+      appState.mode === "CLI"
+        ? "GUI"
+        : "CLI";
 
     dispatch({
       type: "SET_MODE",
@@ -45,8 +60,12 @@ if (toggle) {
     });
 
     render();
+
   });
+
 }
 
+
 dispatch({ type: "INIT" });
+
 render();
