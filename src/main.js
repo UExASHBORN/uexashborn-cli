@@ -32,13 +32,11 @@ function render() {
   }
 
 }
-
+window.__uexashborn_render = render;
 
 setupCLI((input) => {
 
   execute(input, dispatch);
-
-  render();
 
 });
 

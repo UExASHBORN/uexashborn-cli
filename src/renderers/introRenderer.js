@@ -1,6 +1,11 @@
 import ashbornSVG from "../assets/ashborn-full.svg?raw";
+import { dispatch } from "../core/dispatch";
 
 export function renderIntro(container) {
+  let introFinished = false;
+  let characterShown = false;
+  let introActive = true;
+  let skipIntro = false;
 
   const inputRow = document.querySelector(".terminal-input-row");
   if(inputRow){
@@ -27,50 +32,115 @@ export function renderIntro(container) {
 
   const skipBtn = document.getElementById("skip-intro");
   setTimeout(()=>{
+    if(introFinished) return;
     if(skipBtn) skipBtn.style.display = "block";
     if(skipBtn){
-      skipBtn.addEventListener("click", finishIntro);
+      skipBtn.addEventListener("click", ()=>{
+        skipIntro = true;
+        introActive = false;  
+        const log = document.getElementById("intro-log");
+        const final = document.getElementById("intro-final");
+        if(log) log.innerHTML = "";
+        if(final) final.innerHTML = "";
+        revealCharacterInstant();
+        setTimeout(finishIntro,50);
+      });
     }
   },1500);
   document.addEventListener("keydown",(e)=>{
+    if(introFinished) return;
+
     if(e.key === "Escape"){
-      finishIntro();
+
+      skipIntro = true;
+      introActive = false;
+      const log = document.getElementById("intro-log");
+      const final = document.getElementById("intro-final");
+      if(log) log.innerHTML = "";
+      if(final) final.innerHTML = "";
+      revealCharacterInstant();
+      setTimeout(finishIntro, 50); 
     }
   });
 
+  function revealCharacterInstant(){
+
+  const ashbornContainer = document.getElementById("ashborn-container");
+  if(!ashbornContainer) return;
+
+  ashbornContainer.innerHTML = `
+  <div class="ashborn-wrapper">
+    ${ashbornSVG}
+  </div>
+  `;
+
+}
 
   function finishIntro(){
 
-    if(inputRow){
-      inputRow.style.opacity = "1";
-    }
-    const boot = document.querySelector(".intro-text-block");
-    const final = document.getElementById("intro-final");
-    const wrapper = document.querySelector(".ashborn-wrapper");
+  if(introFinished) return;
+  introFinished = true;
 
-    if(boot) boot.remove();
-    if(final) final.remove();
+  const skipBtn = document.getElementById("skip-intro");
+  if(skipBtn) skipBtn.style.display = "none";
 
-    if(wrapper){
-      wrapper.style.overflow = "visible";
-      wrapper.style.height = "auto";
-      wrapper.style.transform = "translateX(14vw)";
-    }
+  const log = document.getElementById("intro-log");
+  const final = document.getElementById("intro-final");
 
-    const input = document.getElementById("cli-input");
+  if(log) log.innerHTML = "";
+  if(final) final.innerHTML = "";
 
-    if(input){
-      input.disabled = false;
-      input.focus();
-    }
-
+  const inputRow = document.querySelector(".terminal-input-row");
+  if(inputRow){
+    inputRow.style.opacity = "1";
   }
+
+  let wrapper = document.querySelector(".ashborn-wrapper");
+
+  if(!wrapper){
+
+    const ashbornContainer = document.getElementById("ashborn-container");
+
+    if(ashbornContainer){
+      ashbornContainer.innerHTML = `
+        <div class="ashborn-wrapper">
+          ${ashbornSVG}
+        </div>
+      `;
+    }
+
+    wrapper = document.querySelector(".ashborn-wrapper");
+  }
+
+  if(wrapper){
+    wrapper.style.overflow = "visible";
+    wrapper.style.height = "auto";
+    wrapper.style.transform = "translateX(14vw)";
+  }
+
+  const input = document.getElementById("cli-input");
+
+  if(input){
+    input.disabled = false;
+    input.focus();
+  }
+  
+  document.body.classList.add("intro-complete");
+  
+  dispatch({ type: "INTRO_COMPLETE" });
+
+}
 
   const log = document.getElementById("intro-log"); 
   const final = document.getElementById("intro-final");
 
   function showCharacter(){
+    characterShown = true;
+
+    if(!introActive) return;
+
     const ashbornContainer = document.getElementById("ashborn-container");
+    if(!ashbornContainer) return;
     ashbornContainer.innerHTML = `
     <div class="ashborn-wrapper">
     ${ashbornSVG}
@@ -82,15 +152,15 @@ export function renderIntro(container) {
     const final = document.getElementById("intro-final");
     setTimeout(()=>{
       final.innerHTML =
-        "You have found Ashborn.<br>Press ENTER to continue";
+        "You have found Ashborn.<br>Press [ENTER] to continue";
       waitForEnter();
-    },1500);
+    },4300);
   }
 
   const steps = [
     { text: "searching for ASHBORN...", mode: "command", delay:1200 },
     { mode:"kernelBoot" },
-    { text: "match found", mode: "type", delay:800 }
+    { text: "match found.", mode: "type", delay:800 , cursor:true}
   ];
 
   const kernelLines = [
@@ -109,6 +179,7 @@ export function renderIntro(container) {
   let i = 0;
 
   function printLine(){
+    if(skipIntro) return;
 
     if(i >= steps.length){
       showCharacter();
@@ -161,16 +232,18 @@ export function renderIntro(container) {
     cursor.className = "cursor";
     cursor.textContent = "█";
 
-    line.appendChild(document.createTextNode(""));
+    const textNode = document.createTextNode("");
+    line.appendChild(textNode);
     line.appendChild(cursor);
 
     log.appendChild(line);
 
     function type(){
+      if(skipIntro) return;
 
       if(index < text.length){
 
-        line.firstChild.textContent += text[index];
+        textNode.textContent += text[index];
         index++;
 
         setTimeout(type, 35);
@@ -178,9 +251,9 @@ export function renderIntro(container) {
       }
       else{
 
-        if(!step.cursor){
-          cursor.remove();
-        }
+      if(step.cursor === false){
+        cursor.remove();
+      }
         const pause = step.delay || 600;
         setTimeout(callback, pause);
       }
@@ -214,6 +287,7 @@ export function renderIntro(container) {
     log.appendChild(line);
 
     function type(){
+      if(skipIntro) return;
 
       if(index < text.length){
 
@@ -243,6 +317,7 @@ export function renderIntro(container) {
     let index = 0;
 
     function next(){
+      if(skipIntro) return;
 
       if(index >= kernelLines.length){
 
@@ -252,8 +327,8 @@ export function renderIntro(container) {
       }
 
       const line = document.createElement("div");
-      line.textContent = generateTimestamp() + " " + kernelLines[index];
-
+      line.innerHTML =
+      `<span class="kernel-time">${generateTimestamp()}</span><span class="kernel-msg">${kernelLines[index]}</span>`;
       line.style.color = "#8b949e";
       line.style.opacity = "0.85";
 
@@ -302,18 +377,13 @@ export function renderIntro(container) {
 
 
   function waitForEnter(){
-    const input = document.getElementById("cli-input");
     const handler = (e)=>{
       if(e.key === "Enter"){
-        finishIntro();
-        input.removeEventListener("keydown", handler);
-      }
-      if(e.key === "Escape"){
-        finishIntro();
-        input.removeEventListener("keydown", handler);
+      document.removeEventListener("keydown", handler);
+      finishIntro();
       }
     }
-    input.addEventListener("keydown",handler);
+    document.addEventListener("keydown", handler);  
   }
   printLine();
 }

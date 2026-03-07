@@ -1,10 +1,21 @@
 import { listArticles } from "../core/contentLoader";
-import { loadArticle } from "../core/contentLoader";
 
 let inputElement;
 let outputElement;
-let lastState = null;
-let lastPayload = null;
+
+const CLI_COMMANDS = [
+  "about",
+  "research",
+  "letters",
+  "notes",
+  "games",
+  "open",
+  "play",
+  "back",
+  "help",
+  "home",
+  "clear"
+];
 
 export function setupCLI(onInput) {
   inputElement = document.getElementById("cli-input");
@@ -12,15 +23,63 @@ export function setupCLI(onInput) {
 
   inputElement.focus();
 
+  const history = [];
+  let historyIndex = -1;
+
   inputElement.addEventListener("keydown", (e) => {
+
     if (e.key === "Enter") {
+  
       const value = inputElement.value.trim();
       if (!value) return;
-
+  
+      history.push(value);
+      historyIndex = history.length;
+  
       appendLine(`> ${value}`, "user");
       onInput(value);
+  
       inputElement.value = "";
     }
+
+    if (e.key === "Tab") {
+
+      e.preventDefault();
+        
+      const value = inputElement.value.trim();
+        
+      if (!value) return;
+        
+      const matches = CLI_COMMANDS.filter(cmd =>
+        cmd.startsWith(value)
+      );
+    
+      if (matches.length === 1) {
+        inputElement.value = matches[0] + " ";
+      }
+
+    }
+  
+    if (e.key === "ArrowUp") {
+  
+      if (historyIndex > 0) {
+        historyIndex--;
+        inputElement.value = history[historyIndex];
+      }
+  
+    }
+  
+    if (e.key === "ArrowDown") {
+  
+      if (historyIndex < history.length - 1) {
+        historyIndex++;
+        inputElement.value = history[historyIndex];
+      } else {
+        inputElement.value = "";
+      }
+  
+    }
+  
   });
 
   document.addEventListener("click", () => {
@@ -28,99 +87,113 @@ export function setupCLI(onInput) {
   });
 }
 
-export function renderCLI(state) {
-  if (
-    state.current === lastState &&
-    JSON.stringify(state.payload) === JSON.stringify(lastPayload)
-  ) {
+function renderIntro() {
+
+  appendLine("UExASHBORN CLI", "system");
+  appendLine("----------------------------------");
+  appendLine("Navigation:", "system");
+  appendLine(" help  → show commands");
+  appendLine(" home  → return here");
+  appendLine(" back  → go back one level");
+  appendLine("----------------------------------");
+
+  appendLine("Available sections:");
+  appendLine(" - about");
+  appendLine(" - research");
+  appendLine(" - letters");
+  appendLine(" - notes");
+  appendLine(" - games");
+
+}
+
+function renderSection(state) {
+
+  appendLine(`Section: ${state.payload}`);
+  appendLine("Articles:");
+
+  if (state.payload !== "games") {
+
+    const articles = listArticles(state.payload);
+
+    if (articles.length === 0) {
+      appendLine(" (no articles yet)");
+    } else {
+      articles.forEach((a) => {
+        appendLine(` - ${a}`);
+      });
+    }
+
+    appendLine("Commands:");
+    appendLine(" - open <id>");
+
+  } else {
+
+    appendLine("Games:");
+    appendLine(" - dino");
+
+    appendLine("Commands:");
+    appendLine(" - play <id>");
+
+  }
+
+  appendLine(" - back");
+
+}
+
+function renderArticle(state) {
+
+  const { slug, article } = state.payload || {};
+
+  if (!article) {
+    appendLine(`Loading article: ${slug}...`);
     return;
   }
 
-  lastState = state.current;
-  lastPayload = state.payload;
+  appendLine("----------------------------------");
+  appendLine(article.meta?.title || slug);
+  appendLine("----------------------------------");
 
-  switch (state.current) {
+  const temp = document.createElement("div");
+  temp.innerHTML = article.html;
 
-    case "INTRO":
-      appendLine("UExASHBORN CLI", "system");
-      appendLine("Available sections:", "system");
-      appendLine(" - about", "system");
-      appendLine(" - research", "system");
-      appendLine(" - letters", "system");
-      appendLine(" - notes", "system");
-      appendLine(" - games", "system");
-      break;
+  temp.querySelectorAll("*").forEach((el) => {
+    appendLine(el.textContent);
+  });
 
-    case "SECTION_VIEW":
-      appendLine(`Section: ${state.payload}`);
-      appendLine("Articles:");
+  appendLine("----------------------------------");
+  appendLine("Commands:");
+  appendLine(" - back");
 
-      if (state.payload !== "games") {
-        const articles = listArticles(state.payload);
+}
 
-        if (articles.length === 0) {
-          appendLine(" (no articles yet)");
-        } else {
-          articles.forEach((a) => {
-            appendLine(` - ${a}`);
-          });
-        }
+function renderGame(state) {
 
-        appendLine("Commands:");
-        appendLine(" - open <id>");
-      } else {
-        appendLine("Games:");
-        appendLine(" - dino");
-        appendLine("Commands:");
-        appendLine(" - play <id>");
-      }
+  appendLine(`Game: ${state.payload}`);
+  appendLine("Commands:");
+  appendLine(" - back");
 
-      appendLine(" - back");
-      break;
+}
 
-    case "ARTICLE_VIEW": {
-      const { section, slug } = state.payload;
+const CLI_RENDERERS = {
+  INTRO: renderIntro,
+  SECTION_VIEW: renderSection,
+  ARTICLE_VIEW: renderArticle,
+  GAME_VIEW: renderGame
+};
 
-      appendLine(`Loading article: ${slug}...`);
+export function renderCLI(state) {
 
-      loadArticle(section, slug).then((article) => {
-        if (!article) {
-          appendLine("Article not found.");
-          return;
-        }
+  const renderer = CLI_RENDERERS[state.current];
 
-        appendLine("----------------------------------");
-        appendLine(article.meta.title || slug);
-        appendLine("----------------------------------");
-
-        const temp = document.createElement("div");
-        temp.innerHTML = article.html;
-
-        temp.querySelectorAll("*").forEach((el) => {
-          appendLine(el.textContent);
-        });
-
-        appendLine("----------------------------------");
-        appendLine("Commands:");
-        appendLine(" - back");
-
-        scrollToBottom();
-      });
-
-      break;
-    }
-
-    case "GAME_VIEW":
-      appendLine(`Game: ${state.payload}`, "system");
-      appendLine("Commands:", "system");
-      appendLine(" - back", "system");
-      break;
+  if (renderer) {
+    renderer(state);
   }
 
   scrollToBottom();
-}
 
-function appendLine(text, type = "system") {
+}
+const appendLine = (text, type = "system") => {
+
   const line = document.createElement("div");
   line.textContent = text;
 
@@ -129,8 +202,8 @@ function appendLine(text, type = "system") {
   }
 
   outputElement.appendChild(line);
-}
 
+};
 function scrollToBottom() {
   outputElement.scrollTop = outputElement.scrollHeight;
 }
