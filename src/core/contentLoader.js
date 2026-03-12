@@ -1,6 +1,8 @@
 // src/core/contentLoader.js
 
 import { marked } from "marked";
+import { setState, appState } from "./stateMachine";
+import { STATES } from "./constants";
 
 /*
   Vite dynamic import:
@@ -13,6 +15,8 @@ const modules = import.meta.glob("/src/content/**/*.md", {
 
 const registry = {};
 const cache = {};
+
+const ALLOWED_SECTIONS = ["soc","games","whoami"];
 
 /*
   Build registry structure:
@@ -52,45 +56,51 @@ export function listSections() {
 }
 
 export function listArticles(section) {
+  if (!ALLOWED_SECTIONS.includes(section)) return [];
   if (!registry[section]) return [];
   return Object.keys(registry[section]);
 }
 
 export async function loadArticle(section, slug) {
+
   if (!registry[section] || !registry[section][slug]) {
-    return null;
+    console.warn("Article not found:", section, slug);
+    return;
   }
 
-  const key = `${section}/${slug}`;
+  const { loader } = registry[section][slug];
 
-  if (cache[key]) {
-    return cache[key];
-  }
+  const raw = await loader();
 
-  const raw = await registry[section][slug].loader();
+  const match = raw.match(/---([\s\S]*?)---([\s\S]*)/);
 
-  // ---- Simple frontmatter parser ----
   let meta = {};
-  let content = raw;
+  let body = raw;
 
-  if (raw.startsWith("---")) {
-    const end = raw.indexOf("---", 3);
-    if (end !== -1) {
-      const fm = raw.slice(3, end).trim();
-      content = raw.slice(end + 3).trim();
+  if (match) {
+    const metaRaw = match[1];
+    body = match[2];
 
-      fm.split("\n").forEach((line) => {
-        const [k, ...v] = line.split(":");
-        meta[k.trim()] = v.join(":").trim();
-      });
-    }
+    metaRaw.split("\n").forEach(line => {
+      const [key, value] = line.split(":");
+      if (key && value) {
+        meta[key.trim()] = value.trim();
+      }
+    });
   }
 
-  const html = marked.parse(content);
+  const html = marked(body);
 
-  const parsed = { meta, html };
+  const article = {
+    meta,
+    html,
+    raw: body
+  };
 
-  cache[key] = parsed;
+  setState(STATES.ARTICLE_VIEW, {
+    section,
+    slug,
+    article
+  });
 
-  return parsed;
 }

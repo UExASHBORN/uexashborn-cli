@@ -1,4 +1,4 @@
-import ashbornSVG from "../assets/ashborn-full.svg?raw";
+import ashbornSVG from "../assets/svg/ashborn-full.svg?raw";
 import { dispatch } from "../core/dispatch";
 
 export function renderIntro(container) {

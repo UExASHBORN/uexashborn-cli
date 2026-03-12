@@ -42,7 +42,8 @@ export function dispatch(action) {
   }
 
   case "ERROR_UNKNOWN_COMMAND":
-    console.log("Unknown command:", action.payload.command);
+    console.log(`Unknown command: ${action.payload.command}`);
+    console.log("Type 'help' to see available commands.");
     break;
 
   case "NO_OP":

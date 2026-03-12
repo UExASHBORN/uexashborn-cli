@@ -1,20 +1,26 @@
 import { listArticles } from "../core/contentLoader";
 
+const MAX_LINES = 300;
+
 let inputElement;
 let outputElement;
 
 const CLI_COMMANDS = [
-  "about",
-  "research",
-  "letters",
-  "notes",
-  "games",
+  "help",
+  "clear",
+  "root",
+  "back",
   "open",
   "play",
-  "back",
-  "help",
-  "home",
-  "clear"
+  "scan",
+  "trace",
+  "breach",
+  "version",
+  "time",
+  "status",
+  "history",
+  "ashborn",
+  "exit"
 ];
 
 export function setupCLI(onInput) {
@@ -27,6 +33,11 @@ export function setupCLI(onInput) {
   let historyIndex = -1;
 
   inputElement.addEventListener("keydown", (e) => {
+
+    if(e.ctrlKey && e.key === "l"){
+      e.preventDefault();
+      outputElement.innerHTML = "";
+    }
 
     if (e.key === "Enter") {
   
@@ -93,15 +104,13 @@ function renderIntro() {
   appendLine("----------------------------------");
   appendLine("Navigation:", "system");
   appendLine(" help  → show commands");
-  appendLine(" home  → return here");
+  appendLine(" root  → return here");
   appendLine(" back  → go back one level");
   appendLine("----------------------------------");
 
   appendLine("Available sections:");
-  appendLine(" - about");
-  appendLine(" - research");
-  appendLine(" - letters");
-  appendLine(" - notes");
+  appendLine(" - whoami");
+  appendLine(" - soc");
   appendLine(" - games");
 
 }
@@ -149,15 +158,24 @@ function renderArticle(state) {
     return;
   }
 
+  appendLine("");
   appendLine("----------------------------------");
   appendLine(article.meta?.title || slug);
   appendLine("----------------------------------");
+  appendLine("");
 
-  const temp = document.createElement("div");
-  temp.innerHTML = article.html;
+  const lines = article.raw.split("\n");
 
-  temp.querySelectorAll("*").forEach((el) => {
-    appendLine(el.textContent);
+  lines.forEach(line => {
+
+    const cleaned = line.replace(/\s+$/, "");
+
+    if (cleaned === "") {
+      appendLine(" ");
+    } else {
+      appendLine(cleaned);
+    }
+
   });
 
   appendLine("----------------------------------");
@@ -185,11 +203,11 @@ export function renderCLI(state) {
 
   const renderer = CLI_RENDERERS[state.current];
 
-  if (renderer) {
-    renderer(state);
-  }
+  if (!renderer) return;
 
-  scrollToBottom();
+  renderer(state);
+
+  requestAnimationFrame(scrollToBottom);
 
 }
 const appendLine = (text, type = "system") => {
@@ -202,6 +220,10 @@ const appendLine = (text, type = "system") => {
   }
 
   outputElement.appendChild(line);
+
+  if(outputElement.children.length > MAX_LINES){
+    outputElement.removeChild(outputElement.firstChild);
+  }
 
 };
 function scrollToBottom() {

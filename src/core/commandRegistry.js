@@ -3,61 +3,97 @@ export const COMMANDS = {
   help: {
     type: "GLOBAL",
     args: 0,
+    description: "show command list",
     aliases: ["h"]
   },
 
   clear: {
     type: "GLOBAL",
-    args: 0
+    args: 0,
+    description: "clear terminal",
+    aliases: ["cls"]
   },
 
-  home: {
+  root: {
     type: "GLOBAL",
-    args: 0
+    args: 0,
+    description: "return to root"
   },
 
-  about: {
+  version: {
     type: "GLOBAL",
-    args: 0
+    args: 0,
+    description: "show CLI version"
   },
 
-  research: {
+  time: {
     type: "GLOBAL",
-    args: 0
+    args: 0,
+    description: "show system time"
   },
 
-  letters: {
+  status: {
     type: "GLOBAL",
-    args: 0
+    args: 0,
+    description: "show system status"
   },
 
-  notes: {
+  history: {
     type: "GLOBAL",
-    args: 0
+    args: 0,
+    description: "show command history"
   },
 
-  games: {
+  ashborn: {
     type: "GLOBAL",
-    args: 0
+    args: 0,
+    description: "activate ashborn protocol"
+  },
+
+  exit: {
+    type: "GLOBAL",
+    args: 0,
+    description: "exit context"
   },
 
   open: {
     type: "CONTEXTUAL",
-    args: 1
+    args: 1,
+    description: "open section",
+    aliases: ["cd"]
   },
 
   play: {
     type: "CONTEXTUAL",
-    args: 1
+    args: 1,
+    description: "play game"
+  },
+
+  scan: {
+    type: "CONTEXTUAL",
+    args: 1,
+    description: "scan target"
+  },
+
+  trace: {
+    type: "CONTEXTUAL",
+    args: 1,
+    description: "trace network"
+  },
+
+  breach: {
+    type: "CONTEXTUAL",
+    args: 1,
+    description: "attempt breach"
   },
 
   back: {
     type: "CONTEXTUAL",
-    args: 0
+    args: 0,
+    description: "go back"
   }
 
 };
-
 
 
 export function resolveCommand(parsed) {
