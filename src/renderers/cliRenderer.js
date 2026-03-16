@@ -1,29 +1,29 @@
 import { listArticles } from "../core/contentLoader";
+import { CLI_COMMANDS } from "../core/commandRegistry";
+import { listSections } from "../core/contentLoader";
+import { commandLock } from "../core/commandHandlers";
+import { on } from "../core/eventBus";
 
 const MAX_LINES = 300;
+// Event Bus Listener (Phase 3)
+on("command:start", (data) => {
+  console.log("EVENT command:start", data);
+});
+
+on("command:end", (data) => {
+  console.log("EVENT command:end", data);
+});
+
+on("section:enter", (section) => {
+  console.log("EVENT section:enter →", section);
+});
+
 
 let inputElement;
 let outputElement;
 
-const CLI_COMMANDS = [
-  "help",
-  "clear",
-  "root",
-  "back",
-  "open",
-  "play",
-  "scan",
-  "trace",
-  "breach",
-  "version",
-  "time",
-  "status",
-  "history",
-  "ashborn",
-  "exit"
-];
-
 export function setupCLI(onInput) {
+  
   inputElement = document.getElementById("cli-input");
   outputElement = document.getElementById("cli-output");
 
@@ -40,6 +40,10 @@ export function setupCLI(onInput) {
     }
 
     if (e.key === "Enter") {
+
+      if (commandLock) {
+        return;
+      }
   
       const value = inputElement.value.trim();
       if (!value) return;
@@ -47,7 +51,7 @@ export function setupCLI(onInput) {
       history.push(value);
       historyIndex = history.length;
   
-      appendLine(`> ${value}`, "user");
+      cliPrint(`> ${value}`, "user");
       onInput(value);
   
       inputElement.value = "";
@@ -56,19 +60,40 @@ export function setupCLI(onInput) {
     if (e.key === "Tab") {
 
       e.preventDefault();
-        
-      const value = inputElement.value.trim();
-        
-      if (!value) return;
-        
-      const matches = CLI_COMMANDS.filter(cmd =>
-        cmd.startsWith(value)
-      );
-    
-      if (matches.length === 1) {
-        inputElement.value = matches[0] + " ";
-      }
 
+      const value = inputElement.value.trim();
+      if (!value) return;
+
+      const parts = value.split(" ");
+
+      // COMMAND AUTOCOMPLETE
+      if (parts.length === 1) {
+      
+        const matches = CLI_COMMANDS.filter(cmd =>
+          cmd.startsWith(parts[0])
+        );
+      
+        if (matches.length === 1) {
+          inputElement.value = matches[0] + " ";
+        }
+      
+      }
+    
+      // SECTION AUTOCOMPLETE
+      if (parts.length === 2 && parts[0] === "open") {
+      
+        const sections = ["whoami", "soc", "games"];
+      
+        const matches = sections.filter(section =>
+          section.startsWith(parts[1])
+        );
+      
+        if (matches.length === 1) {
+          inputElement.value = `open ${matches[0]}`;
+        }
+      
+      }
+    
     }
   
     if (e.key === "ArrowUp") {
@@ -100,52 +125,57 @@ export function setupCLI(onInput) {
 
 function renderIntro() {
 
-  appendLine("UExASHBORN CLI", "system");
-  appendLine("----------------------------------");
-  appendLine("Navigation:", "system");
-  appendLine(" help  → show commands");
-  appendLine(" root  → return here");
-  appendLine(" back  → go back one level");
-  appendLine("----------------------------------");
+  cliPrint("UExASHBORN CLI", "system");
+  cliPrint("----------------------------------");
+  cliPrint("Navigation:", "system");
+  cliPrint(" help  → show commands");
+  cliPrint(" root  → return here");
+  cliPrint(" back  → go back one level");
+  cliPrint("----------------------------------");
 
-  appendLine("Available sections:");
-  appendLine(" - whoami");
-  appendLine(" - soc");
-  appendLine(" - games");
+  cliPrint("Available sections:");
+  cliPrint(" - whoami");
+  cliPrint(" - soc");
+  cliPrint(" - games");
 
 }
 
 function renderSection(state) {
 
-  appendLine(`Section: ${state.payload}`);
-  appendLine("Articles:");
+  const title = state.payload.toUpperCase();
+  cliPrint(title);
+  cliPrint("-------------");
+  cliPrint("");
 
   if (state.payload !== "games") {
 
     const articles = listArticles(state.payload);
 
     if (articles.length === 0) {
-      appendLine(" (no articles yet)");
+      cliPrint(" (no articles yet)");
     } else {
       articles.forEach((a) => {
-        appendLine(` - ${a}`);
+        cliPrint(` - ${a}`);
       });
     }
+    cliPrint("-------------");
+    cliPrint("");
 
-    appendLine("Commands:");
-    appendLine(" - open <id>");
+    cliPrint("Commands:");
+    cliPrint(" - open <id>");
 
   } else {
 
-    appendLine("Games:");
-    appendLine(" - dino");
+    cliPrint(" - dino");
+    cliPrint("-------------");
+    cliPrint("");
 
-    appendLine("Commands:");
-    appendLine(" - play <id>");
+    cliPrint("Commands:");
+    cliPrint(" - play <id>");
 
   }
 
-  appendLine(" - back");
+  cliPrint(" - back");
 
 }
 
@@ -154,15 +184,15 @@ function renderArticle(state) {
   const { slug, article } = state.payload || {};
 
   if (!article) {
-    appendLine(`Loading article: ${slug}...`);
+    cliPrint(`Loading article: ${slug}...`);
     return;
   }
 
-  appendLine("");
-  appendLine("----------------------------------");
-  appendLine(article.meta?.title || slug);
-  appendLine("----------------------------------");
-  appendLine("");
+  cliPrint("");
+  cliPrint("----------------------------------");
+  cliPrint(article.meta?.title || slug);
+  cliPrint("----------------------------------");
+  cliPrint("");
 
   const lines = article.raw.split("\n");
 
@@ -171,24 +201,24 @@ function renderArticle(state) {
     const cleaned = line.replace(/\s+$/, "");
 
     if (cleaned === "") {
-      appendLine(" ");
+      cliPrint(" ");
     } else {
-      appendLine(cleaned);
+      cliPrint(cleaned);
     }
 
   });
 
-  appendLine("----------------------------------");
-  appendLine("Commands:");
-  appendLine(" - back");
+  cliPrint("----------------------------------");
+  cliPrint("Commands:");
+  cliPrint(" - back");
 
 }
 
 function renderGame(state) {
 
-  appendLine(`Game: ${state.payload}`);
-  appendLine("Commands:");
-  appendLine(" - back");
+  cliPrint(`Game: ${state.payload}`);
+  cliPrint("Commands:");
+  cliPrint(" - back");
 
 }
 
@@ -201,7 +231,33 @@ const CLI_RENDERERS = {
 
 export function renderCLI(state) {
 
+  updatePrompt(state);
+
   const renderer = CLI_RENDERERS[state.current];
+
+  function updatePrompt(state) {
+
+    const prompt = document.querySelector(".prompt");
+
+    if (!prompt) return;
+
+    let context = "root";
+
+    if (state.current === "SECTION_VIEW") {
+      context = state.payload;
+    }
+
+    if (state.current === "ARTICLE_VIEW") {
+      context = state.payload.section;
+    }
+
+    if (state.current === "GAME_VIEW") {
+      context = "games";
+    }
+
+    prompt.textContent = `ashborn:${context}$ >>>`;
+
+  }
 
   if (!renderer) return;
 
@@ -210,22 +266,42 @@ export function renderCLI(state) {
   requestAnimationFrame(scrollToBottom);
 
 }
-const appendLine = (text, type = "system") => {
+
+
+export function cliPrint(text, type = "system") {
+
+  if (!outputElement) return;
 
   const line = document.createElement("div");
-  line.textContent = text;
+
+  if (typeof text === "string") {
+    line.textContent = text;
+  } else {
+    line.appendChild(text);
+  }
 
   if (type === "user") {
     line.style.color = "#58a6ff";
   }
 
+  if (type === "error") {
+    line.style.color = "#ff6b6b";
+  }
+
   outputElement.appendChild(line);
 
-  if(outputElement.children.length > MAX_LINES){
+  if (outputElement.children.length > MAX_LINES) {
     outputElement.removeChild(outputElement.firstChild);
   }
 
-};
+  requestAnimationFrame(scrollToBottom);
+}
+
+
 function scrollToBottom() {
+
+  if (!outputElement) return;
+
   outputElement.scrollTop = outputElement.scrollHeight;
+
 }

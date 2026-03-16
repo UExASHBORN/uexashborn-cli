@@ -1,4 +1,6 @@
 import "./styles/main.css";
+import "./core/poseController";
+import { preloadPoses } from "./core/poseController";
 
 import { renderIntro } from "./renderers/introRenderer";
 
@@ -65,5 +67,6 @@ if (toggle) {
 
 
 dispatch({ type: "INIT" });
+preloadPoses();
 
 render();

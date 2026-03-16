@@ -58,5 +58,17 @@ if (!allowed.includes(newState)) {
   if (window.__uexashborn_render) {
     window.__uexashborn_render();
   }
+  
+  import("./eventBus").then(({ emit }) => {
+  
+    if(newState === "SECTION_VIEW"){
+      emit("section:enter", payload);
+    }
+  
+    if(newState === "INTRO"){
+      emit("section:enter", "root");
+    }
+  
+  });
 
 }

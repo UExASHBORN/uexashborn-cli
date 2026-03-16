@@ -1,7 +1,7 @@
 ---
 title: WHOAMI
 ---
-Hey, it's Adeel this side.
+Hey, it's ADEEL this side.
 
 Computer Science student focused on
 Security Operations and system design.

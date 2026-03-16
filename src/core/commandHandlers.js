@@ -1,14 +1,65 @@
 import { setState, appState } from "./stateMachine";
+import { cliPrint } from "../renderers/cliRenderer";
 import { STATES } from "./constants";
 import { clearScreen } from "../utils/cliUtils";
 import { loadArticle } from "./contentLoader";
+import { runScan } from "../simulations/scan";
+import { runTrace } from "../simulations/trace";
+import { runBreach } from "../simulations/breach";
+
+
+
+export let commandLock = false;
 
 export function handleGlobalCommand(cmd) {
 
   switch(cmd){
 
     case "help":
-      console.log("Type 'help' to see available commands.");
+      cliPrint("----------");
+      cliPrint("NAVIGATION");
+      cliPrint("----------");
+      cliPrint("open <section>     open a section");
+      cliPrint("open <article>     open an article inside a section");
+      cliPrint("back               return to previous level");
+      cliPrint("root               return to root interface");
+      cliPrint("");
+
+      cliPrint("--------");
+      cliPrint("COMMANDS");
+      cliPrint("--------");
+      cliPrint("help               show this help screen");
+      cliPrint("clear              clear terminal output");
+      cliPrint("history            show command history");
+      cliPrint("version            show system version");
+      cliPrint("time               display system time");
+      cliPrint("status             show system state");
+      cliPrint("exit               close the interface");
+      cliPrint("");
+
+      cliPrint("--------------");
+      cliPrint("SECURITY DEMOS");
+      cliPrint("--------------");
+      cliPrint("scan <target>      simulate reconnaissance scan");
+      cliPrint("trace <ip>         simulate network tracing");
+      cliPrint("breach <target>    simulate breach analysis");
+      cliPrint("");
+
+      cliPrint("-----------");
+      cliPrint("EXPERIMENTS");
+      cliPrint("-----------");
+      cliPrint("play <game>        start a game");
+      cliPrint("ashborn            activate the Ashborn easter-egg");
+      cliPrint("");
+
+      cliPrint("--------");
+      cliPrint("EXAMPLES");
+      cliPrint("--------");
+      cliPrint("open whoami");
+      cliPrint("open soc");
+      cliPrint("scan ssh-lab");
+      cliPrint("play dino");
+
       break;
 
     case "clear":
@@ -26,18 +77,18 @@ export function handleGlobalCommand(cmd) {
       break;
 
     case "version":
-      console.log("UExASHBORN CLI v0.3");
+      cliPrint("UExASHBORN CLI v0.3");
       break;
 
     case "time":
-      console.log(new Date().toLocaleTimeString());
+      cliPrint(new Date().toLocaleTimeString());
       break;
 
     case "status":
-      console.log("State:", appState.current);
-      console.log("Section:", appState.payload);
+      cliPrint(`State: ${appState.current}`);
+      cliPrint(`Section: ${appState.payload}`);
       break;
-
+      
     case "history":
       console.log("History command not yet connected to renderer.");
       break;
@@ -134,6 +185,43 @@ export function handleContextualCommand(command, args) {
 
       console.log("Listing items...");
       break;
+
+    case "scan": {
+      const target = args[0] || "target";
+      commandLock = true;
+
+      runScan(target).then(() => {
+        commandLock = false;
+      });
+    
+      break;
+    }
+
+    case "trace": {
+
+      const target = args[0] || "target";
+
+      commandLock = true;
+
+      runTrace(target).then(() => {
+        commandLock = false;
+      });
+    
+      break;
+    }
+
+    case "breach": {
+
+      const target = args[0] || "target";
+
+      commandLock = true;
+        
+      runBreach(target).then(() => {
+        commandLock = false;
+      });
+    
+      break;
+    }
 
     default:
 

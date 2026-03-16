@@ -95,6 +95,8 @@ export const COMMANDS = {
 
 };
 
+export const CLI_COMMANDS = Object.keys(COMMANDS);
+
 
 export function resolveCommand(parsed) {
 

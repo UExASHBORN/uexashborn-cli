@@ -14,7 +14,6 @@ const modules = import.meta.glob("/src/content/**/*.md", {
 });
 
 const registry = {};
-const cache = {};
 
 const ALLOWED_SECTIONS = ["soc","games","whoami"];
 

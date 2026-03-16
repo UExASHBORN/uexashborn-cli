@@ -4,6 +4,9 @@ import {
   handleGlobalCommand,
   handleContextualCommand
 } from "./commandHandlers";
+import { cliPrint } from "../renderers/cliRenderer";
+import { CLI_COMMANDS } from "./commandRegistry";
+import { getClosestCommand } from "../utils/cliUtils";
 
 export function dispatch(action) {
   switch (action.type) {
@@ -30,9 +33,15 @@ export function dispatch(action) {
   }
 
   case "GLOBAL_COMMAND": {
+
     const cmd = action.payload.command;
+    const args = action.payload.args || [];
+
+    logCommand(cmd, args);
+
     handleGlobalCommand(cmd);
-   break;
+
+    break;
   }
 
   case "CONTEXTUAL_COMMAND": {
@@ -41,10 +50,22 @@ export function dispatch(action) {
     break;
   }
 
-  case "ERROR_UNKNOWN_COMMAND":
-    console.log(`Unknown command: ${action.payload.command}`);
-    console.log("Type 'help' to see available commands.");
+  case "ERROR_UNKNOWN_COMMAND": {
+
+    const cmd = action.payload.command;
+
+    cliPrint(`Unknown command: ${cmd}`, "error");
+
+    const suggestion = getClosestCommand(cmd);
+
+    if (suggestion) {
+      cliPrint(`Did you mean: ${suggestion} ?`);
+    } else {
+      cliPrint("Type 'help' to see available commands.");
+    }
+
     break;
+  }
 
   case "NO_OP":
     break;
@@ -52,4 +73,15 @@ export function dispatch(action) {
   default:
     console.warn("Unknown action:", action);
   }
+}
+
+
+function logCommand(cmd, args = []) {
+
+  const time = new Date().toLocaleTimeString();
+
+  const full = [cmd, ...args].join(" ");
+
+  cliPrint(`[${time}] command received: ${full}`);
+
 }
