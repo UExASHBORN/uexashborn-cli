@@ -1,8 +1,8 @@
 import "./styles/main.css";
 import "./core/poseController";
 import { preloadPoses } from "./core/poseController";
-
 import { renderIntro } from "./renderers/introRenderer";
+import { on } from "./core/eventBus";
 
 const introContainer = document.getElementById("intro-svg");
 
@@ -34,7 +34,10 @@ function render() {
   }
 
 }
-window.__uexashborn_render = render;
+
+on("state:changed", () => {
+  render();
+});
 
 setupCLI((input) => {
 

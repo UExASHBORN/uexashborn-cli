@@ -1,4 +1,5 @@
 import { STATES } from "./constants";
+import { emit } from "./eventBus";
 
 const VALID_TRANSITIONS = {
 
@@ -38,9 +39,7 @@ export function setState(newState, payload = null) {
 
 if (newState === current) {
   appState.payload = payload;
-  if (window.__uexashborn_render) {
-    window.__uexashborn_render();
-  }
+  emit("state:changed", appState);
   return;
 }
 if (!allowed.includes(newState)) {
@@ -55,9 +54,7 @@ if (!allowed.includes(newState)) {
   appState.payload = payload;
 
   // trigger render automatically
-  if (window.__uexashborn_render) {
-    window.__uexashborn_render();
-  }
+  emit("state:changed", appState);
   
   import("./eventBus").then(({ emit }) => {
   
