@@ -1,8 +1,9 @@
 import { listArticles } from "../core/contentLoader";
 import { CLI_COMMANDS } from "../core/commandRegistry";
-import { listSections } from "../core/contentLoader";
 import { commandLock } from "../core/commandHandlers";
 import { on } from "../core/eventBus";
+import { getClosestCommand } from "../utils/cliUtils";
+import { SECTIONS } from "../core/constants";
 
 const MAX_LINES = 300;
 // Event Bus Listener (Phase 3)
@@ -16,6 +17,33 @@ on("command:end", (data) => {
 
 on("section:enter", (section) => {
   console.log("EVENT section:enter →", section);
+});
+
+on("cli:error:unknown", ({ command }) => {
+
+  cliPrint(`Unknown command: ${command}`, "error");
+
+  const suggestion = getClosestCommand(command);
+
+  if (suggestion) {
+    cliPrint(`Did you mean: ${suggestion} ?`);
+  } else {
+    cliPrint("Type 'help' to see available commands.");
+  }
+
+});
+on("cli:log", ({ time, command, args }) => {
+
+  const full = [command, ...args].join(" ");
+
+  cliPrint(`[${time}] command received: ${full}`);
+
+});
+
+on("cli:error:args", ({ command }) => {
+
+  cliPrint(`Invalid arguments for command: ${command}`, "error");
+
 });
 
 
@@ -82,9 +110,7 @@ export function setupCLI(onInput) {
       // SECTION AUTOCOMPLETE
       if (parts.length === 2 && parts[0] === "open") {
       
-        const sections = ["whoami", "soc", "games"];
-      
-        const matches = sections.filter(section =>
+        const matches = SECTIONS.filter(section =>
           section.startsWith(parts[1])
         );
       
@@ -134,9 +160,10 @@ function renderIntro() {
   cliPrint("----------------------------------");
 
   cliPrint("Available sections:");
-  cliPrint(" - whoami");
-  cliPrint(" - soc");
-  cliPrint(" - games");
+
+  SECTIONS.forEach(section => {
+    cliPrint(` - ${section}`);
+  });
 
 }
 
@@ -295,6 +322,11 @@ export function cliPrint(text, type = "system") {
   }
 
   requestAnimationFrame(scrollToBottom);
+}
+
+export function clearScreen() {
+  const out = document.getElementById("cli-output");
+  if (out) out.innerHTML = "";
 }
 
 

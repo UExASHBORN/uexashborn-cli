@@ -37,35 +37,32 @@ export function setState(newState, payload = null) {
 
   const allowed = VALID_TRANSITIONS[current] || [];
 
-if (newState === current) {
-  appState.payload = payload;
-  emit("state:changed", appState);
-  return;
-}
-if (!allowed.includes(newState)) {
+  if (newState === current) {
+    appState.payload = payload;
+    emit("state:changed", appState);
+    return;
+  }
+  if (!allowed.includes(newState)) {
 
-  console.warn(
-    `Invalid state transition: ${current} → ${newState}`
-  );
+    console.warn(
+      `Invalid state transition: ${current} → ${newState}`
+    );
 
-  return;
-}
+    return;
+  }
   appState.current = newState;
   appState.payload = payload;
 
   // trigger render automatically
   emit("state:changed", appState);
-  
-  import("./eventBus").then(({ emit }) => {
-  
-    if(newState === "SECTION_VIEW"){
-      emit("section:enter", payload);
-    }
-  
-    if(newState === "INTRO"){
-      emit("section:enter", "root");
-    }
-  
-  });
+
+
+  if (newState === STATES.SECTION_VIEW) {
+    emit("section:enter", payload);
+  }
+
+  if (newState === STATES.INTRO) {
+    emit("section:enter", "root");
+  }
 
 }

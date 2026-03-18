@@ -1,8 +1,3 @@
-export function clearScreen() {
-  const out = document.getElementById("cli-output");
-  if (out) out.innerHTML = "";
-}
-
 import { CLI_COMMANDS } from "../core/commandRegistry";
 
 export function getClosestCommand(input) {

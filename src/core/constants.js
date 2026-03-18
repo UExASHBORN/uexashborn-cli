@@ -7,3 +7,5 @@ export const STATES = {
   ARTICLE_VIEW: "ARTICLE_VIEW",
   GAME_VIEW: "GAME_VIEW"
 };
+
+export const SECTIONS = ["whoami", "soc", "games"];

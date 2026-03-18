@@ -1,11 +1,12 @@
 import { setState, appState } from "./stateMachine";
 import { cliPrint } from "../renderers/cliRenderer";
 import { STATES } from "./constants";
-import { clearScreen } from "../utils/cliUtils";
+import { clearScreen } from "../renderers/cliRenderer";
 import { loadArticle } from "./contentLoader";
 import { runScan } from "../simulations/scan";
 import { runTrace } from "../simulations/trace";
 import { runBreach } from "../simulations/breach";
+import { SECTIONS } from "./constants";
 
 
 
@@ -63,8 +64,7 @@ export function handleGlobalCommand(cmd) {
       break;
 
     case "clear":
-      const out = document.getElementById("cli-output");
-      if(out) out.innerHTML = "";
+      clearScreen();
       break;
 
     case "root":
@@ -129,10 +129,9 @@ export function handleContextualCommand(command, args) {
     case "open": {
 
       const target = args[0];
-      const sections = ["whoami", "soc", "games"];
 
       // open section
-      if (sections.includes(target)) {
+      if (SECTIONS.includes(target)) {
         clearScreen();
 
         if (target === "whoami") {

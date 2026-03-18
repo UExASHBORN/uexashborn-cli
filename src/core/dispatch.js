@@ -4,9 +4,7 @@ import {
   handleGlobalCommand,
   handleContextualCommand
 } from "./commandHandlers";
-import { cliPrint } from "../renderers/cliRenderer";
-import { CLI_COMMANDS } from "./commandRegistry";
-import { getClosestCommand } from "../utils/cliUtils";
+import { emit } from "./eventBus";
 
 export function dispatch(action) {
   switch (action.type) {
@@ -51,19 +49,12 @@ export function dispatch(action) {
   }
 
   case "ERROR_UNKNOWN_COMMAND": {
+    emit("cli:error:unknown", action.payload);
+    break;
+  }
 
-    const cmd = action.payload.command;
-
-    cliPrint(`Unknown command: ${cmd}`, "error");
-
-    const suggestion = getClosestCommand(cmd);
-
-    if (suggestion) {
-      cliPrint(`Did you mean: ${suggestion} ?`);
-    } else {
-      cliPrint("Type 'help' to see available commands.");
-    }
-
+  case "ERROR_INVALID_ARGUMENTS": {
+    emit("cli:error:args", action.payload);
     break;
   }
 
@@ -80,8 +71,10 @@ function logCommand(cmd, args = []) {
 
   const time = new Date().toLocaleTimeString();
 
-  const full = [cmd, ...args].join(" ");
-
-  cliPrint(`[${time}] command received: ${full}`);
+  emit("cli:log", {
+    time,
+    command: cmd,
+    args
+  });
 
 }

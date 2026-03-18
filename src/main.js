@@ -62,8 +62,6 @@ if (toggle) {
       payload: nextMode,
     });
 
-    render();
-
   });
 
 }
@@ -72,4 +70,3 @@ if (toggle) {
 dispatch({ type: "INIT" });
 preloadPoses();
 
-render();

@@ -15,7 +15,6 @@ const modules = import.meta.glob("/src/content/**/*.md", {
 
 const registry = {};
 
-const ALLOWED_SECTIONS = ["soc","games","whoami"];
 
 /*
   Build registry structure:
@@ -55,7 +54,6 @@ export function listSections() {
 }
 
 export function listArticles(section) {
-  if (!ALLOWED_SECTIONS.includes(section)) return [];
   if (!registry[section]) return [];
   return Object.keys(registry[section]);
 }
