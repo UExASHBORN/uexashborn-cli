@@ -4,6 +4,11 @@ import { commandLock } from "../core/commandHandlers";
 import { on } from "../core/eventBus";
 import { getClosestCommand } from "../utils/cliUtils";
 import { SECTIONS } from "../core/constants";
+import { GAMES } from "../games/registry";
+import { mountGame } from "../games/gameRunner";
+import { appState } from "../core/stateMachine";
+
+let lastPromptContext = null;
 
 const MAX_LINES = 300;
 // Event Bus Listener (Phase 3)
@@ -32,13 +37,6 @@ on("cli:error:unknown", ({ command }) => {
   }
 
 });
-on("cli:log", ({ time, command, args }) => {
-
-  const full = [command, ...args].join(" ");
-
-  cliPrint(`[${time}] command received: ${full}`);
-
-});
 
 on("cli:error:args", ({ command }) => {
 
@@ -50,9 +48,26 @@ on("cli:error:args", ({ command }) => {
 let inputElement;
 let outputElement;
 
+let lastAshbornHover = 0;
+const HOVER_COOLDOWN = 8000; // 8 seconds
+
 export function setupCLI(onInput) {
   
   inputElement = document.getElementById("cli-input");
+
+  const fakeCursor = document.getElementById("fake-cursor");
+  function updateCursor() {
+    if (!fakeCursor) return;
+  
+    if (inputElement.value.length === 0) {
+      fakeCursor.style.display = "inline";
+    } else {
+      fakeCursor.style.display = "none";
+    }
+  }
+  // initial state
+  updateCursor();
+
   outputElement = document.getElementById("cli-output");
 
   inputElement.focus();
@@ -67,6 +82,22 @@ export function setupCLI(onInput) {
       outputElement.innerHTML = "";
     }
 
+    // 🔥 prevent game control keys from polluting CLI
+    if (appState.current === "GAME_VIEW") {
+    
+      // block arrow keys completely
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+        e.preventDefault();
+        return;
+      }
+    
+      // block 'r' spam when game handles restart
+      if (e.key.toLowerCase() === "r") {
+        e.preventDefault();
+        return;
+      }
+    }
+    
     if (e.key === "Enter") {
 
       if (commandLock) {
@@ -79,7 +110,7 @@ export function setupCLI(onInput) {
       history.push(value);
       historyIndex = history.length;
   
-      cliPrint(`> ${value}`, "user");
+      cliPrint(`>>> ${value}`, "user");
       onInput(value);
   
       inputElement.value = "";
@@ -123,6 +154,8 @@ export function setupCLI(onInput) {
     }
   
     if (e.key === "ArrowUp") {
+
+      if (appState.current === "GAME_VIEW") return;
   
       if (historyIndex > 0) {
         historyIndex--;
@@ -132,6 +165,8 @@ export function setupCLI(onInput) {
     }
   
     if (e.key === "ArrowDown") {
+
+      if (appState.current === "GAME_VIEW") return;
   
       if (historyIndex < history.length - 1) {
         historyIndex++;
@@ -141,6 +176,8 @@ export function setupCLI(onInput) {
       }
   
     }
+    setTimeout(updateCursor, 0);
+    inputElement.addEventListener("input", updateCursor);
   
   });
 
@@ -152,18 +189,35 @@ export function setupCLI(onInput) {
 function renderIntro() {
 
   cliPrint("UExASHBORN CLI", "system");
-  cliPrint("----------------------------------");
-  cliPrint("Navigation:", "system");
-  cliPrint(" help  → show commands");
-  cliPrint(" root  → return here");
-  cliPrint(" back  → go back one level");
-  cliPrint("----------------------------------");
+  cliPrint("---------------");
+  cliPrint("");
 
-  cliPrint("Available sections:");
+  cliPrint("Hey there — welcome to UExASHBORN.");
+  cliPrint("");
 
-  SECTIONS.forEach(section => {
-    cliPrint(` - ${section}`);
-  });
+  cliPrint("If you're new to command line interfaces,");
+  cliPrint('type "help" to see available commands.');
+  cliPrint("");
+
+  cliPrint("If CLI feels confusing, try the GUI button");
+  cliPrint("at the top right.");
+  cliPrint("");
+
+  cliPrint("-----------------");
+  cliPrint("You can explore sections using:-");
+  cliPrint("open <section>  - to explore content");
+  cliPrint("play <game>     - to start a game");
+  cliPrint("back            - to go one level back");
+  cliPrint("root            - to return here");
+  cliPrint("");
+  cliPrint("");
+
+  cliPrint("AVAILABLE SECTIONS");
+  cliPrint("-------------------");
+
+  cliPrint("whoami  → information about the operator");
+  cliPrint("soc     → security operations projects and labs");
+  cliPrint("games   → terminal experiments and small games");
 
 }
 
@@ -173,6 +227,27 @@ function renderSection(state) {
   cliPrint(title);
   cliPrint("-------------");
   cliPrint("");
+
+  if (state.payload === "whoami") {
+
+    cliPrint("It's ADEEL this side.");
+    cliPrint("");
+
+    cliPrint("Computer Science student focused on");
+    cliPrint("Security Operations and system design.");
+    cliPrint("");
+
+    cliPrint("Also a WannaBe Hacker.");
+    cliPrint("");
+
+    cliPrint("This terminal is part of my personal project");
+    cliPrint("UExASHBORN.");
+    cliPrint("");
+
+    cliPrint("-------------");
+    cliPrint("");
+    cliPrint("Explore my work:-");
+  }
 
   if (state.payload !== "games") {
 
@@ -193,14 +268,16 @@ function renderSection(state) {
 
   } else {
 
-    cliPrint(" - dino");
-    cliPrint("-------------");
-    cliPrint("");
+  Object.values(GAMES).forEach(game => {
+    cliPrint(` - ${game.name}`);
+  });
 
-    cliPrint("Commands:");
-    cliPrint(" - play <id>");
+  cliPrint("-------------");
+  cliPrint("");
 
-  }
+  cliPrint("Commands:");
+  cliPrint(" - play <id>");
+}
 
   cliPrint(" - back");
 
@@ -219,7 +296,6 @@ function renderArticle(state) {
   cliPrint("----------------------------------");
   cliPrint(article.meta?.title || slug);
   cliPrint("----------------------------------");
-  cliPrint("");
 
   const lines = article.raw.split("\n");
 
@@ -243,10 +319,13 @@ function renderArticle(state) {
 
 function renderGame(state) {
 
-  cliPrint(`Game: ${state.payload}`);
-  cliPrint("Commands:");
-  cliPrint(" - back");
+  const container = document.getElementById("cli-output");
 
+  if (!container) return;
+
+  container.innerHTML = ""; // clear terminal
+
+  mountGame(state.payload, container);
 }
 
 const CLI_RENDERERS = {
@@ -282,7 +361,16 @@ export function renderCLI(state) {
       context = "games";
     }
 
-    prompt.textContent = `ashborn:${context}$ >>>`;
+    if (context === lastPromptContext) return;
+
+    lastPromptContext = context;
+
+    prompt.innerHTML = `
+      <span class="prompt-host">ashborn</span>:
+      <span class="prompt-context">${context}</span>
+      <span class="prompt-symbol">$</span>
+      <span class="prompt-arrows"> >>></span>
+    `;
 
   }
 
@@ -302,10 +390,15 @@ export function cliPrint(text, type = "system") {
   const line = document.createElement("div");
 
   if (typeof text === "string") {
-    line.textContent = text;
+
+  if (text === "") {
+    // preserve empty line visually
+    line.innerHTML = "&nbsp;";
   } else {
-    line.appendChild(text);
+    line.textContent = text;
   }
+
+}
 
   if (type === "user") {
     line.style.color = "#58a6ff";

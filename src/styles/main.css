@@ -41,7 +41,39 @@ z-index:5;
 
 .prompt{
 margin-right:8px;
-color:#58a6ff;
+}
+
+.prompt-host {
+  color: #58a6ff; /* muted */
+}
+
+.prompt-context {
+  color: #00e1ff;
+
+  animation: pulseContext 2.5s ease-in-out infinite;
+}
+
+@keyframes pulseContext {
+  0%, 100% {
+    text-shadow:
+      0 0 4px rgba(0,225,255,0.3),
+      0 0 8px rgba(0,225,255,0.2);
+  }
+
+  50% {
+    text-shadow:
+      0 0 12px rgba(0,225,255,0.9),
+      0 0 24px rgba(0,225,255,0.6);
+  }
+}
+
+.prompt-symbol {
+  color: #ffffff; /* clean white */
+}
+
+.prompt-arrows {
+  color: #58a6ff;
+  margin-left: 4px;
 }
 
 .terminal-input{
@@ -51,6 +83,38 @@ border:none;
 outline:none;
 color:inherit;
 font:inherit;
+/* ✨ subtle glow */
+text-shadow: 0 0 4px rgba(88,166,255,0.4);
+}
+
+.input-wrapper {
+  position: relative;
+  flex: 1;
+}
+
+/* hide real caret */
+.terminal-input {
+  caret-color: transparent;
+}
+
+/* fake block cursor */
+.fake-cursor {
+  position: absolute;
+  left: 2px;
+  top: 0;
+
+  color: #c9d1d9;
+
+  animation: blinkBlock 1s steps(1) infinite;
+
+  pointer-events: none;
+}
+
+/* blinking */
+@keyframes blinkBlock {
+  0% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 1; }
 }
 
 /* mode toggle */
@@ -65,11 +129,62 @@ border:1px solid #58a6ff;
 color:#58a6ff;
 cursor:pointer;
 user-select:none;
-z-index:10;
+z-index: 9999;
+
+/* ✅ IMPORTANT FIX */
+position: fixed;
+overflow: hidden;
+
+/* glow */
+box-shadow: 0 0 10px rgba(88,166,255,0.2);
 }
 
 .mode-toggle:hover{
 background:rgba(88,166,255,0.1);
+
+/* ✨ stronger glow on hover */
+box-shadow: 0 0 18px rgba(88,166,255,0.45);
+}
+
+.mode-toggle::before {
+  content:"";
+  position:absolute;
+  top:0;
+  left:-100%;
+  width:100%;
+  height:100%;
+
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255,255,255,0.25),
+    transparent
+  );
+
+  animation: shine 4s linear infinite; /* ✅ continuous + slow */
+}
+
+/* animated border glow */
+.mode-toggle::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 2px;
+  opacity: 0.5;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #58a6ff,
+    transparent
+  );
+
+  animation: borderGlow 6s linear infinite;
+  z-index: -1;
+}
+
+@keyframes borderGlow {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 .skip-intro{
@@ -185,6 +300,34 @@ width:420px;
 height:28vh;
 overflow:hidden;
 animation: scanReveal 3.5s ease forwards;
+pointer-events: auto;
+}
+
+.ashborn-bubble {
+  position: fixed;
+  z-index: 999;
+
+  background: rgba(13,17,23,0.95);
+  border: 1px solid #58a6ff;
+
+  padding: 6px 10px;
+  font-size: 12px;
+  font-family: monospace;
+
+  color: #c9d1d9;
+
+  white-space: nowrap;
+
+  box-shadow: 0 0 12px rgba(88,166,255,0.25);
+
+  animation: fadeInOut 1.8s ease forwards;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(6px); }
+  10% { opacity: 1; transform: translateY(0); }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-6px); }
 }
 
 .ashborn-wrapper svg{
@@ -194,6 +337,7 @@ width:auto;
 opacity:0.45;
 transform:translateY(-6%);
 animation:armorPulse 4s ease-in-out infinite;
+pointer-events: visibleStroke;
 /* position:relative; */
 }
 
@@ -274,5 +418,130 @@ opacity:.8;
 margin-top:6px;
 
 font-family:monospace;
+
+}
+
+/* =========================
+   GUI POPUP (CLI THEMED)
+========================= */
+
+.gui-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(13, 17, 23, 0.85);
+  z-index: 100;
+}
+
+.gui-popup.hidden {
+  display: none;
+}
+
+.gui-popup-content {
+  width: 420px;
+  max-width: 90%;
+
+  background: #0d1117;
+  border: 1px solid #58a6ff;
+
+  box-shadow: 0 0 20px rgba(88,166,255,0.2);
+
+  font-family: monospace;
+  color: #c9d1d9;
+}
+
+.gui-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 8px 12px;
+  border-bottom: 1px solid #58a6ff;
+
+  color: #58a6ff;
+}
+
+.gui-popup-header button {
+  background: transparent;
+  border: none;
+  color: #58a6ff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.gui-popup-header button:hover {
+  color: #ff6b6b;
+}
+
+.gui-popup-body {
+  padding: 14px;
+  line-height: 1.6;
+}
+
+/* =========================
+   MOBILE LAYOUT
+========================= */
+
+@media (max-width: 768px) {
+
+  body {
+    overflow-x: hidden;
+    overflow-y: auto; /* 🔥 allow vertical scroll */
+  }
+
+  .terminal {
+    min-height: 100dvh;   /* 🔥 dynamic height */
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Ashborn goes TOP */
+  .intro-layout {
+    position: relative;
+    padding-top: 60px; /* 🔥 pushes content below buttons */
+    height: auto;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .ashborn-wrapper {
+    max-width: 100%;
+    overflow: hidden;
+    width: 100%;
+    height: auto;            /* ❗ remove fixed height */
+    overflow: visible;       /* ❗ stop clipping */
+    justify-content: center;
+    align-items: center;
+    transform: none !important;
+    margin-top: 10px;
+  }
+
+  .ashborn-wrapper svg {
+    width: 100%;
+    height: auto;            /* ❗ responsive scaling */
+    max-height: 45vh;        /* ❗ safe limit */
+    transform: none;         /* ❗ remove upward shift */
+  }
+
+  /* CLI output below */
+  .terminal-output {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0; 
+  }
+  /* INPUT FIXED AT BOTTOM */
+  .terminal-input-row {
+    position: sticky;
+    bottom: 0;
+    background: #0d1117;
+    z-index: 20; /* 🔥 ensure always visible */
+  }
 
 }

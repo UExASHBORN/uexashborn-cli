@@ -2,17 +2,22 @@ import { setState, appState } from "./stateMachine";
 import { cliPrint } from "../renderers/cliRenderer";
 import { STATES } from "./constants";
 import { clearScreen } from "../renderers/cliRenderer";
-import { loadArticle } from "./contentLoader";
 import { runScan } from "../simulations/scan";
 import { runTrace } from "../simulations/trace";
 import { runBreach } from "../simulations/breach";
 import { SECTIONS } from "./constants";
 
-
+export const commandHistory = [];
 
 export let commandLock = false;
 
 export function handleGlobalCommand(cmd) {
+
+  commandHistory.push({
+    command: cmd,
+    args: [],
+    time: new Date().toLocaleTimeString()
+  });
 
   switch(cmd){
 
@@ -68,6 +73,14 @@ export function handleGlobalCommand(cmd) {
       break;
 
     case "root":
+
+      // If already at root → just re-render
+      if (appState.current === STATES.INTRO) {
+        clearScreen();
+        setState(STATES.INTRO);
+        return;
+      }
+    
       clearScreen();
       setState(STATES.INTRO);
       break;
@@ -89,9 +102,23 @@ export function handleGlobalCommand(cmd) {
       cliPrint(`Section: ${appState.payload}`);
       break;
       
-    case "history":
-      console.log("History command not yet connected to renderer.");
-      break;
+    case "history": {
+
+      if (commandHistory.length === 0) {
+        cliPrint("No commands yet.");
+        return;
+      }
+    
+      cliPrint("Command History:");
+      cliPrint("----------------");
+    
+      commandHistory.forEach((entry, index) => {
+        const full = [entry.command, ...entry.args].join(" ");
+        cliPrint(`${index + 1}. [${entry.time}] ${full}`);
+      });
+    
+      return;
+    }
 
     case "ashborn":
       console.log("Ashborn protocol activated.");
@@ -107,24 +134,42 @@ export function handleGlobalCommand(cmd) {
 
 export function handleContextualCommand(command, args) {
 
+  commandHistory.push({
+    command,
+    args,
+    time: new Date().toLocaleTimeString()
+  });
+
   switch (command) {
 
-    case "back":
+    case "back": {
+
+    // 🚫 Do nothing if already at root
+    if (appState.current === STATES.INTRO) {
+      cliPrint("Cannot go back from here.", "error");
+      return;
+    }
+  
+    if (appState.current === STATES.SECTION_VIEW) {
       clearScreen();
-
-      if (appState.current === STATES.SECTION_VIEW) {
-        setState(STATES.INTRO);
-      }
-
-      else if (appState.current === STATES.ARTICLE_VIEW) {
-        setState(STATES.SECTION_VIEW, appState.payload.section);
-      }
-
-      else if (appState.current === STATES.GAME_VIEW) {
-        setState(STATES.SECTION_VIEW, "games");
-      }
-
-      break;
+      setState(STATES.INTRO);
+      return;
+    }
+  
+    if (appState.current === STATES.ARTICLE_VIEW) {
+      clearScreen();
+      setState(STATES.SECTION_VIEW, appState.payload.section);
+      return;
+    }
+  
+    if (appState.current === STATES.GAME_VIEW) {
+      clearScreen();
+      setState(STATES.SECTION_VIEW, "games");
+      return;
+    }
+  
+    break;
+  }
 
     case "open": {
 
@@ -132,32 +177,19 @@ export function handleContextualCommand(command, args) {
 
       // open section
       if (SECTIONS.includes(target)) {
-        clearScreen();
 
-        if (target === "whoami") {
-
-          setState(STATES.SECTION_VIEW, "whoami");
-
-          clearScreen();
-
-          loadArticle("whoami", "profile");
-
+        // 🚫 Already in same section
+        if (
+          appState.current === STATES.SECTION_VIEW &&
+          appState.payload === target
+        ) {
+          cliPrint(`Already in ${target}.`);
           return;
         }
-
-        setState(STATES.SECTION_VIEW, target);
-        return;
-      }
-    
-      // open article inside section
-      if (appState.current === STATES.SECTION_VIEW) {
-      
-        const section = appState.payload;
       
         clearScreen();
       
-        loadArticle(section, target);
-      
+        setState(STATES.SECTION_VIEW, target);
         return;
       }
     

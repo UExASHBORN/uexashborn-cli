@@ -20,9 +20,29 @@
 
   <div class="terminal-input-row">
     <span class="prompt"></span>
-    <input id="cli-input" class="terminal-input" autocomplete="off"/>
+    <div class="input-wrapper">
+      <input id="cli-input" class="terminal-input" autocomplete="off"/>
+      <span id="fake-cursor" class="fake-cursor">█</span>
+    </div>
   </div>
 
+</div>
+<div id="gui-popup" class="gui-popup hidden">
+  <div class="gui-popup-content">
+
+    <div class="gui-popup-header">
+      <span>GUI</span>
+      <button id="gui-popup-close">✕</button>
+    </div>
+
+    <div class="gui-popup-body">
+      <p>GUI?</p>
+      <p>No.</p>
+      <p>This system runs on command line only.</p>
+      <p>Nice try though :)</p>
+    </div>
+
+  </div>
 </div>
 
 <script type="module" src="/src/main.js"></script>

@@ -1,5 +1,6 @@
 import ashbornSVG from "../assets/svg/ashborn-full.svg?raw";
 import { dispatch } from "../core/dispatch";
+import { ashbornSpeakUI } from "./ashbornVoice";
 
 export function renderIntro(container) {
   let introFinished = false;
@@ -74,6 +75,14 @@ export function renderIntro(container) {
   </div>
   `;
 
+  const svg = ashbornContainer.querySelector("svg");
+    
+  if (svg) {
+    svg.addEventListener("mouseenter", () => {
+      ashbornSpeakUI(svg);
+    });
+  }
+
 }
 
   function finishIntro(){
@@ -107,6 +116,14 @@ export function renderIntro(container) {
           ${ashbornSVG}
         </div>
       `;
+
+      const svg = ashbornContainer.querySelector("svg");
+          
+      if (svg) {
+        svg.addEventListener("mouseenter", () => {
+          ashbornSpeakUI(svg);
+        });
+      }
     }
 
     wrapper = document.querySelector(".ashborn-wrapper");
@@ -146,7 +163,16 @@ export function renderIntro(container) {
     ${ashbornSVG}
     </div>
     `;
+
     const svg = ashbornContainer.querySelector("svg");
+
+    if (svg) {
+      svg.addEventListener("mouseenter", () => {
+        ashbornSpeakUI(svg);
+      });
+    }
+
+    // const svg = ashbornContainer.querySelector("svg");
     if(!svg) return;
 
     const final = document.getElementById("intro-final");
