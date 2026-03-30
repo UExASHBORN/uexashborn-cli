@@ -8,6 +8,8 @@ This project simulates a terminal environment where users navigate content, exec
 
 ![Preview](./boot-sequence.png)
 
+
+> Simulating a terminal-native experience inside the browser.
 ---
 
 ## Core Features
