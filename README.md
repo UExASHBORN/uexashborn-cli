@@ -6,6 +6,10 @@ This project simulates a terminal environment where users navigate content, exec
 
 ---
 
+![Preview](./boot-sequence.png)
+
+---
+
 ## Core Features
 
 - Command-line interface (CLI) navigation
@@ -32,15 +36,24 @@ The system is built with a modular and extensible architecture:
 ## Modules
 
 ### Security Simulations
-- Log anomaly detection  
+- Log anomaly detection
 - SSH brute-force detection (Fail2Ban-based concept)
 
 ### Rage Game (Terminal Engine)
-- Real-time terminal-rendered game loop  
-- Physics system (gravity, jump, collision)  
-- Multiple trap types (spikes, falling traps, fragile tiles)  
-- Multi-level progression system  
-- Keyboard-controlled movement  
+- Real-time terminal-rendered game loop
+- Physics system (gravity, jump, collision)
+- Multiple trap types (spikes, falling traps, fragile tiles)
+- Multi-level progression system
+- Keyboard-controlled movement
+- Log anomaly detection
+- SSH brute-force detection (Fail2Ban-based concept)
+
+### Rage Game (Terminal Engine)
+- Real-time terminal-rendered game loop
+- Physics system (gravity, jump, collision)
+- Multiple trap types (spikes, falling traps, fragile tiles)
+- Multi-level progression system
+- Keyboard-controlled movement
 
 ---
 
@@ -72,6 +85,10 @@ Planned improvements:
 - Expanded game mechanics  
 - Performance optimizations  
 - UI/UX refinements  
+- More simulations
+- Expanded game mechanics
+- Performance optimizations
+- UI/UX refinements
 
 ---
 
@@ -79,10 +96,14 @@ Planned improvements:
 
 This project was built to explore:
 
-- Event-driven system design  
-- CLI-based interfaces in the browser  
-- Modular architecture for interactive systems  
-- Combining security concepts with interactive visualization  
+- Event-driven system design
+- CLI-based interfaces in the browser
+- Modular architecture for interactive systems
+- Combining security concepts with interactive visualization
+- Event-driven system design
+- CLI-based interfaces in the browser
+- Modular architecture for interactive systems
+- Combining security concepts with interactive visualization
 
 ---
 
