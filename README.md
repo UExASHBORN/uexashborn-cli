@@ -35,7 +35,7 @@ The system is built with a modular and extensible architecture:
 - Log anomaly detection  
 - SSH brute-force detection (Fail2Ban-based concept)
 
-### 🎮 Rage Game (Terminal Engine)
+### Rage Game (Terminal Engine)
 - Real-time terminal-rendered game loop  
 - Physics system (gravity, jump, collision)  
 - Multiple trap types (spikes, falling traps, fragile tiles)  
@@ -44,7 +44,7 @@ The system is built with a modular and extensible architecture:
 
 ---
 
-## 🎮 Example Commands
+## Example Commands
 - open games
 - play rage
 - open soc
@@ -88,4 +88,4 @@ This project was built to explore:
 
 ## Author
 
-UExASHBORN
+ADEEL ARIF
