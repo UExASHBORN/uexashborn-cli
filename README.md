@@ -50,12 +50,24 @@ The system is built with a modular and extensible architecture:
 - Log anomaly detection
 - SSH brute-force detection (Fail2Ban-based concept)
 
-### Rage Game (Terminal Engine)
-- Real-time terminal-rendered game loop
-- Physics system (gravity, jump, collision)
-- Multiple trap types (spikes, falling traps, fragile tiles)
-- Multi-level progression system
-- Keyboard-controlled movement
+---
+
+### Birdy (Procedural CLI Game System)
+
+A lightweight terminal-based game focused on procedural generation and controlled difficulty scaling.
+
+- Dynamic obstacle system (blocks + pipes)
+- Procedural gap generation with guaranteed escape paths
+- Targeted traps reacting to player position
+- Difficulty scaling based on score progression
+- Stable render pipeline (no layout shift / newline control)
+- Freeze-state handling with restart system
+
+**Engineering Focus:**
+- Preventing impossible states (unavoidable collisions)
+- Maintaining fixed terminal layout under dynamic rendering
+- Balancing randomness vs fairness in obstacle generation 
+- Managing game state transitions (live → freeze → restart)
 
 ---
 
@@ -83,10 +95,10 @@ Then use the CLI inside the browser.
 This project is under active development.
 
 Planned improvements:
-- More simulations  
-- Expanded game mechanics  
-- Performance optimizations  
-- UI/UX refinements  
+- More simulations
+- Expanded game mechanics
+- Performance optimizations 
+- UI/UX refinements
 - More simulations
 - Expanded game mechanics
 - Performance optimizations
