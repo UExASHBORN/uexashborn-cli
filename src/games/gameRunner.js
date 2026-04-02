@@ -19,6 +19,11 @@ export async function mountGame(name, container) {
     const { startRage } = await import("./rage.js");
     activeGameCleanup = startRage(container);
   }
+
+  if (name === "birdy") {
+    const { startBirdy } = await import("./birdy.js");
+    activeGameCleanup = startBirdy(container);
+  }
 }
 
 export function cleanupGame() {
